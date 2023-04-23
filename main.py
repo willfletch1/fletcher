@@ -22,7 +22,8 @@ def find_structural_motifs ( filename = "",
 if __name__ == '__main__':
   parser = argparse.ArgumentParser ( 
                     prog='Fletcher',
-                    description='Fletcher will try to find a list of residues within a fixed distance from the centre of mass. \nConcept: Federico Sabbaddin & Jon Agirre, University of York, UK.',
+                    description='Fletcher will try to find a list of residues within a fixed distance from the centre of mass.'\
+                                '\nConcept: Federico Sabbaddin & Jon Agirre, University of York, UK.',
                     epilog='Please send bug reports to Jon Agirre: jon.agirre@york.ac.uk' )
 
   parser.add_argument ( '-f', '--filename', help = "The name of the file to be processed, in PDB or mmCIF format", required = True )                  
