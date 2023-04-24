@@ -14,12 +14,13 @@ def find_structural_motifs ( filename = "",
   for model in first_residues.models(af_model):
     for chain in first_residues.chains(model):
       for residue in first_residues.residues(chain):
+        result = []
         print(residue)
         marks = neighbour_search.find_neighbors ( residue[-1], 0, distance )
         print ("Number of neighbours found: ", len(marks))
         for mark in marks :
           cra = mark.to_cra ( af_model[0] )
-          print ( cra.residue )
+          print ( cra.residue.name )
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser ( 
