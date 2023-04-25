@@ -11,6 +11,7 @@ def find_structural_motifs ( filename = "",
   neighbour_search = gemmi.NeighborSearch ( af_model[0], af_model.cell, distance ).populate ( include_h=False )
   first_residues = gemmi.Selection ( '(' + residue_lists[0][0] + ')' ) 
   
+  result_dict = { }
   result_list = [ ]
 
   for model in first_residues.models(af_model):
@@ -36,6 +37,24 @@ def find_structural_motifs ( filename = "",
           if len(residue_lists) == len(partial_result) :
             print ( "COMPLETE result found: ", partial_result )
             result_list.append ( partial_result )
+  
+  if len ( result_list ) > 0 :
+    result_dict['filename'] = filename
+    result_dict['residue_lists'] = str(residue_lists)
+    result_dict['distance'] = distance
+    hit_list = [ ]
+
+    for result in result_list :
+      for residue in result :
+        residue_dict = { }
+        residue_dict['name']  = residue.name
+        residue_dict['seqid'] = str(residue.seqid)
+        hit_list.append ( residue_dict )
+
+    result_dict['hits'] = hit_list
+
+    with open ( filename.split('.')[0] + '.json', 'w' ) as file_out :
+      json.dump ( result_dict, file_out, sort_keys=False, indent=4 )
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser ( 
