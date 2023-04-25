@@ -4,23 +4,38 @@ import argparse
 import json
 
 def find_structural_motifs ( filename = "",
-                             residues = [ ],
+                             residue_lists = [ ],
                              distance = 0.0 ) :
   
   af_model = gemmi.read_structure ( filename )
   neighbour_search = gemmi.NeighborSearch ( af_model[0], af_model.cell, distance ).populate ( include_h=False )
-  first_residues = gemmi.Selection ( '(' + residues[0][0] + ')' ) 
+  first_residues = gemmi.Selection ( '(' + residue_lists[0][0] + ')' ) 
   
+  result_list = [ ]
+
   for model in first_residues.models(af_model):
     for chain in first_residues.chains(model):
       for residue in first_residues.residues(chain):
-        result = []
-        print(residue)
+        partial_result = [ residue ]
+        print ( "Adding ", residue, " to the partial result" )
         marks = neighbour_search.find_neighbors ( residue[-1], 0, distance )
         print ("Number of neighbours found: ", len(marks))
-        for mark in marks :
-          cra = mark.to_cra ( af_model[0] )
-          print ( cra.residue.name )
+        for candidate_list in residue_lists[1:] :
+          for candidate in candidate_list :
+            print ( "Processing candidate: ", candidate )
+            found_in_contacts = False
+            for mark in marks :
+              cra = mark.to_cra ( af_model[0] )
+              if candidate == cra.residue.name and cra.residue not in partial_result :
+                print ("Adding ", cra.residue.name, cra.residue.seqid, " to result list" )
+                partial_result.append ( cra.residue )
+                found_in_contacts = True
+                break
+            if found_in_contacts :
+              break
+          if len(residue_lists) == len(partial_result) :
+            print ( "COMPLETE result found: ", partial_result )
+            result_list.append ( partial_result )
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser ( 
@@ -45,6 +60,6 @@ if __name__ == '__main__':
 
   print ( "Running Fletcher with the following parameters:\nFilename: ", args.filename, "\nResidue list: ", list_of_residues, "\nDistance: ", distance )
   
-  if len ( list_of_residues ) > 0 and distance > 0.0 :
+  if len ( list_of_residues ) > 1 and distance > 0.0 :
     find_structural_motifs ( args.filename, list_of_residues, distance )
 
