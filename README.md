@@ -22,6 +22,9 @@ Required arguments:
   -d DISTANCE, --distance DISTANCE
                         Specifies how far each of the residues can be from the
                         rest, in Angstroems
+  -p PLDDT, --plddt PLDDT
+                        Flag up candidate residues with average pLDDT below
+                        thresold (Jumper et al., 2020).
 
 Optional arguments:
 
