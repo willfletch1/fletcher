@@ -5,7 +5,8 @@ import json
 
 def find_structural_motifs ( filename = "",
                              residue_lists = [ ],
-                             distance = 0.0 ) :
+                             distance = 0.0,
+                             min_plddt = 70.0 ) :
   
   af_model = gemmi.read_structure ( filename )
   neighbour_search = gemmi.NeighborSearch ( af_model[0], af_model.cell, distance ).populate ( include_h=False )
@@ -43,6 +44,7 @@ def find_structural_motifs ( filename = "",
     result_dict['filename'] = filename
     result_dict['residue_lists'] = str(residue_lists)
     result_dict['distance'] = distance
+    result_dict['plddt'] = min_plddt
     hit_list = [ ]
 
     for result in result_list :
@@ -51,6 +53,10 @@ def find_structural_motifs ( filename = "",
         residue_dict = { }
         residue_dict['name']  = residue.name
         residue_dict['seqid'] = str(residue.seqid)
+        if residue[-1].b_iso < min_plddt :
+          residue_dict['plddt'] = 'LOW PLDDT: %.2f' % residue[-1].b_iso
+        else :
+          residue_dict['plddt'] = '%.2f' % residue[-1].b_iso
         hit.append ( residue_dict )
       hit_list.append ( hit )
       print ( "Hit found:", hit )
@@ -82,8 +88,8 @@ if __name__ == '__main__':
                         help = "Specifies how far each of the residues can be from the rest, in Angstroems.", \
                         default = "0.0", required = True )  
 
-  parser.add_argument ( 'p', '--plddt', \
-                        help = "The minimum average pLDDT (Jumper et al., 2020) the detected residues should have.", \
+  parser.add_argument ( '-p', '--plddt', \
+                        help = "Flag up candidate residues with average pLDDT below thresold (Jumper et al., 2020).", \
                         default = "70.0", required = False )
 
   args = parser.parse_args ( )
@@ -102,13 +108,15 @@ if __name__ == '__main__':
     list_of_residues.append ( gemmi.expand_protein_one_letter_string ( slot ) )
 
   distance = float ( args.distance )
+  min_plddt = float ( args.plddt )
 
   print ( "Running Fletcher with the following parameters:\nFilename: ", 
           args.filename, "\nResidue list: ", 
           list_of_residues, "\nDistance: ", 
-          distance,
+          distance, "pLDDT: ",
+          min_plddt,
           "\n" )
   
   if len ( list_of_residues ) > 1 and distance > 0.0 :
-    find_structural_motifs ( args.filename, list_of_residues, distance )
+    find_structural_motifs ( args.filename, list_of_residues, distance, min_plddt )
 
