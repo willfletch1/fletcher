@@ -18,24 +18,23 @@ def find_structural_motifs ( filename = "",
     for chain in first_residues.chains(model):
       for residue in first_residues.residues(chain):
         partial_result = [ residue ]
-        print ( "Adding ", residue, " to the partial result" )
         marks = neighbour_search.find_neighbors ( residue[-1], 0, distance )
-        print ("Number of neighbours found: ", len(marks))
         for candidate_list in residue_lists[1:] :
           for candidate in candidate_list :
-            print ( "Processing candidate: ", candidate )
             found_in_contacts = False
             for mark in marks :
               cra = mark.to_cra ( af_model[0] )
-              if candidate == cra.residue.name and cra.residue not in partial_result :
-                print ("Adding ", cra.residue.name, cra.residue.seqid, " to result list" )
+              
+              if gemmi.find_tabulated_residue(candidate).one_letter_code.upper() == \
+                 gemmi.find_tabulated_residue(cra.residue.name).one_letter_code.upper() \
+                 and cra.residue not in partial_result :
+                
                 partial_result.append ( cra.residue )
                 found_in_contacts = True
                 break
             if found_in_contacts :
               break
           if len(residue_lists) == len(partial_result) :
-            print ( "COMPLETE result found: ", partial_result )
             result_list.append ( partial_result )
   
   if len ( result_list ) > 0 :
@@ -45,16 +44,22 @@ def find_structural_motifs ( filename = "",
     hit_list = [ ]
 
     for result in result_list :
+      hit = [ ]
       for residue in result :
         residue_dict = { }
         residue_dict['name']  = residue.name
         residue_dict['seqid'] = str(residue.seqid)
-        hit_list.append ( residue_dict )
+        hit.append ( residue_dict )
+      hit_list.append ( hit )
+      print ( "Hit found:", hit )
 
     result_dict['hits'] = hit_list
 
     with open ( filename.split('.')[0] + '.json', 'w' ) as file_out :
       json.dump ( result_dict, file_out, sort_keys=False, indent=4 )
+  else :
+    print ("\nNo results found :-( \n")
+  return result_dict
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser ( 
@@ -69,6 +74,13 @@ if __name__ == '__main__':
 
   args = parser.parse_args ( )
   
+  # Assuming argparse has got the right number of parameters beyond this point
+
+  print ( "\nFletcher is a tool that helps spot and document molecular features in AlphaFold models."\
+          "\nConcept: Federico Sabbaddin & Jon Agirre, University of York, UK."\
+          "\nLatest source code: https://github.com/glycojones/fletcher"\
+          "\nBug reports to jon.agirre@york.ac.uk\n\n" )
+
   input_residues = args.residues.split(',')
   list_of_residues = [ ]
 
@@ -77,7 +89,11 @@ if __name__ == '__main__':
 
   distance = float ( args.distance )
 
-  print ( "Running Fletcher with the following parameters:\nFilename: ", args.filename, "\nResidue list: ", list_of_residues, "\nDistance: ", distance )
+  print ( "Running Fletcher with the following parameters:\nFilename: ", 
+          args.filename, "\nResidue list: ", 
+          list_of_residues, "\nDistance: ", 
+          distance,
+          "\n" )
   
   if len ( list_of_residues ) > 1 and distance > 0.0 :
     find_structural_motifs ( args.filename, list_of_residues, distance )
