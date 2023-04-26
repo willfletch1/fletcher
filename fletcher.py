@@ -25,6 +25,8 @@ def find_structural_motifs ( filename = "",
             for mark in marks :
               cra = mark.to_cra ( af_model[0] )
               
+              # We do the following conversion to harness gemmi's translation of modified residue codes
+              # into the unmodified ones, e.g. HIC (methylated histidine) >> HIS (normal histidine)
               if gemmi.find_tabulated_residue(candidate).one_letter_code.upper() == \
                  gemmi.find_tabulated_residue(cra.residue.name).one_letter_code.upper() \
                  and cra.residue not in partial_result :
@@ -68,9 +70,21 @@ if __name__ == '__main__':
                                 '\nConcept: Federico Sabbaddin & Jon Agirre, University of York, UK.',
                     epilog='Please send bug reports to Jon Agirre: jon.agirre@york.ac.uk' )
 
-  parser.add_argument ( '-f', '--filename', help = "The name of the file to be processed, in PDB or mmCIF format", required = True )                  
-  parser.add_argument ( '-r', '--residues', help = "A list of residues in one-letter code, comma separated, and including alternatives, e.g. L,A,FWY", default = "GF", required = True )                       
-  parser.add_argument ( '-d', '--distance', help = "Specifies how far each of the residues can be from the rest, in Angstroems", default = "0.0", required = True )  
+  parser.add_argument ( '-f', '--filename', \
+                        help = "The name of the file to be processed, in PDB or mmCIF format.", \
+                        required = True )                  
+
+  parser.add_argument ( '-r', '--residues', \
+                        help = "A list of residues in one-letter code, comma separated, and including alternatives, e.g. L,A,FWY.", \
+                        default = "GF", required = True )                       
+
+  parser.add_argument ( '-d', '--distance', \
+                        help = "Specifies how far each of the residues can be from the rest, in Angstroems.", \
+                        default = "0.0", required = True )  
+
+  parser.add_argument ( 'p', '--plddt', \
+                        help = "The minimum average pLDDT (Jumper et al., 2020) the detected residues should have.", \
+                        default = "70.0", required = False )
 
   args = parser.parse_args ( )
   
