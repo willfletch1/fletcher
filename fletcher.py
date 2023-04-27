@@ -1,7 +1,7 @@
-import sys
 import gemmi
 import argparse
 import json
+from coot_scripting import create_script_file
 
 def find_structural_motifs ( filename = "",
                              residue_lists = [ ],
@@ -57,6 +57,7 @@ def find_structural_motifs ( filename = "",
           residue_dict['plddt'] = 'LOW PLDDT: %.2f' % residue[-1].b_iso
         else :
           residue_dict['plddt'] = '%.2f' % residue[-1].b_iso
+        residue_dict ['coordinates'] = residue[-1].pos.tolist()
         hit.append ( residue_dict )
       hit_list.append ( hit )
       print ( "Hit found:", hit )
@@ -65,6 +66,9 @@ def find_structural_motifs ( filename = "",
 
     with open ( filename.split('.')[0] + '.json', 'w' ) as file_out :
       json.dump ( result_dict, file_out, sort_keys=False, indent=4 )
+    
+    create_script_file ( filename, hit_list )
+  
   else :
     print ("\nNo results found :-( \n")
   return result_dict
