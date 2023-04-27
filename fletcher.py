@@ -1,6 +1,7 @@
 import gemmi
 import argparse
 import json
+from pathlib import Path
 from coot_scripting import create_script_file
 
 def find_structural_motifs ( filename = "",
@@ -41,6 +42,7 @@ def find_structural_motifs ( filename = "",
             result_list.append ( partial_result )
   
   if len ( result_list ) > 0 :
+    Path ( filename ).touch() # We want results at the top
     result_dict['filename'] = filename
     result_dict['residue_lists'] = str(residue_lists)
     result_dict['distance'] = distance
