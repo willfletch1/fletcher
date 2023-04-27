@@ -8,7 +8,7 @@ Usage:
 Fletcher [-h] -f FILENAME -r RESIDUES -d DISTANCE
 
 The program will try to find a list of residues within a fixed distance from the
-centre of mass. Concept: Federico Sabbaddin & Jon Agirre, University of York,
+centre of mass. Concept: Federico Sabbadin & Jon Agirre, University of York,
 UK.
 
 Required arguments:
