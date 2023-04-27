@@ -73,7 +73,7 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser ( 
                     prog='Fletcher',
                     description='Fletcher will try to find a list of residues within a fixed distance from the centre of mass.'\
-                                '\nConcept: Federico Sabbaddin & Jon Agirre, University of York, UK.',
+                                '\nConcept: Federico Sabbadin & Jon Agirre, University of York, UK.',
                     epilog='Please send bug reports to Jon Agirre: jon.agirre@york.ac.uk' )
 
   parser.add_argument ( '-f', '--filename', \
