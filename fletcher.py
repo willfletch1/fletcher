@@ -1,13 +1,16 @@
 import gemmi
 import argparse
 import json
+from Bio.PDB import PDBParser
+from Bio.PDB.SASA import ShrakeRupley
 from pathlib import Path
 from coot_scripting import create_script_file
 
 def find_structural_motifs ( filename = "",
                              residue_lists = [ ],
                              distance = 0.0,
-                             min_plddt = 70.0 ) :
+                             min_plddt = 70.0,
+                             solvent_accessible = False ) :
   
   af_model = gemmi.read_structure ( filename )
   neighbour_search = gemmi.NeighborSearch ( af_model[0], af_model.cell, distance ).populate ( include_h=False )
@@ -39,7 +42,20 @@ def find_structural_motifs ( filename = "",
             if found_in_contacts :
               break
           if len(residue_lists) == len(partial_result) :
-            result_list.append ( partial_result )
+            # Solvent exposure checks?
+            if solvent_accessible :
+              p = PDBParser ( QUIET=1 )
+              struct = p.get_structure ( "model", filename )
+              sr = ShrakeRupley ( )
+              sr.compute ( struct, level="S" )
+              # struct.sasa gives the total SASA
+              for result in partial_result :
+                # check SASA > 0 for all hits
+                if struct[0]["A"][result.seqid].sasa == 0.0 :
+                  break
+              result_list.append ( partial_result )
+            else :
+              result_list.append ( partial_result )
   
   if len ( result_list ) > 0 :
     Path ( filename ).touch() # We want results at the top
@@ -97,6 +113,11 @@ if __name__ == '__main__':
   parser.add_argument ( '-p', '--plddt', \
                         help = "Flag up candidate residues with average pLDDT below thresold (Jumper et al., 2020).", \
                         default = "70.0", required = False )
+  
+  parser.add_argument ( '-e', '--exposed', \
+                        help = 'Require all residues in the motif to be exposed to the solvent', \
+                        choices = [ 'yes', 'no' ], \
+                        default = 'no' )
 
   args = parser.parse_args ( )
   
@@ -115,14 +136,16 @@ if __name__ == '__main__':
 
   distance = float ( args.distance )
   min_plddt = float ( args.plddt )
+  solvent_accessible = True if args.exposed == 'yes' else False
 
   print ( "Running Fletcher with the following parameters:\nFilename: ", 
           args.filename, "\nResidue list: ", 
           list_of_residues, "\nDistance: ", 
           distance, "pLDDT: ",
           min_plddt,
+          "\nSolvent accessible: ", solvent_accessible,
           "\n" )
   
   if len ( list_of_residues ) > 1 and distance > 0.0 :
-    find_structural_motifs ( args.filename, list_of_residues, distance, min_plddt )
+    find_structural_motifs ( args.filename, list_of_residues, distance, min_plddt, solvent_accessible )
 
