@@ -48,11 +48,15 @@ def find_structural_motifs ( filename = "",
               struct = p.get_structure ( "model", filename )
               sr = ShrakeRupley ( )
               sr.compute ( struct, level="S" )
-              # struct.sasa gives the total SASA
               for result in partial_result :
                 # check SASA > 0 for all hits
-                if struct[0]["A"][result.seqid].sasa == 0.0 :
+                sasa = 0.0
+                for atom in struct[0]["A"][result.seqid.num] :
+                  sasa += atom.sasa
+                if sasa == 0.0 : 
                   break
+                else:
+                  print ("sasa:", sasa)
               result_list.append ( partial_result )
             else :
               result_list.append ( partial_result )
@@ -115,7 +119,7 @@ if __name__ == '__main__':
                         default = "70.0", required = False )
   
   parser.add_argument ( '-e', '--exposed', \
-                        help = 'Require all residues in the motif to be exposed to the solvent', \
+                        help = 'Require all residues in the motif to be exposed to the solvent.', \
                         choices = [ 'yes', 'no' ], \
                         default = 'no' )
 
@@ -141,9 +145,8 @@ if __name__ == '__main__':
   print ( "Running Fletcher with the following parameters:\nFilename: ", 
           args.filename, "\nResidue list: ", 
           list_of_residues, "\nDistance: ", 
-          distance, "pLDDT: ",
-          min_plddt,
-          "\nSolvent accessible: ", solvent_accessible,
+          distance, "\npLDDT: ",
+          min_plddt, "\nSolvent accessible: ", solvent_accessible,
           "\n" )
   
   if len ( list_of_residues ) > 1 and distance > 0.0 :
