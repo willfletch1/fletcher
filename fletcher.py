@@ -8,7 +8,9 @@ def find_structural_motifs ( filename = "",
                              residue_lists = [ ],
                              distance = 0.0,
                              min_plddt = 70.0,
-                             solvent_accessible = False ) :
+                             n_term = False,
+                             c_term = False,
+                            ) :
   
   af_model = gemmi.read_structure ( filename )
   neighbour_search = gemmi.NeighborSearch ( af_model[0], af_model.cell, distance ).populate ( include_h=False )
@@ -40,7 +42,16 @@ def find_structural_motifs ( filename = "",
             if found_in_contacts :
               break
           if len(residue_lists) == len(partial_result) :
-            result_list.append ( partial_result )
+            if (n_term or c_term) :
+              in_terminus = False
+              for residue in partial_result :
+                if n_term and residue.seqid.num == 1 :
+                  in_terminus = True
+                elif c_term and residue.seqid.num == chain[-1].seqid.num :
+                  in_terminus = True
+              if in_terminus : result_list.append ( partial_result )
+            else :
+              result_list.append ( partial_result )
             
   if len ( result_list ) > 0 :
     Path ( filename ).touch() # We want results at the top
@@ -99,8 +110,13 @@ if __name__ == '__main__':
                         help = "Flag up candidate residues with average pLDDT below thresold (Jumper et al., 2020).", \
                         default = "70.0", required = False )
   
-  parser.add_argument ( '-e', '--exposed', \
-                        help = 'Require all residues in the motif to be exposed to the solvent', \
+  parser.add_argument ( '-n', '--nterm', \
+                        help = 'Require one residue to be at the n-terminus', \
+                        choices = [ 'yes', 'no' ], \
+                        default = 'no' )
+  
+  parser.add_argument ( '-c', '--cterm', \
+                        help = 'Require one residue to be at the c-terminus', \
                         choices = [ 'yes', 'no' ], \
                         default = 'no' )
 
@@ -121,16 +137,18 @@ if __name__ == '__main__':
 
   distance = float ( args.distance )
   min_plddt = float ( args.plddt )
-  solvent_accessible = True if args.exposed == 'yes' else False
+  n_term = True if args.nterm == 'yes' else False
+  c_term = True if args.cterm == 'yes' else False
 
   print ( "Running Fletcher with the following parameters:\nFilename: ", 
           args.filename, "\nResidue list: ", 
           list_of_residues, "\nDistance: ", 
-          distance, "pLDDT: ",
+          distance, "\npLDDT: ",
           min_plddt,
-          "\nSolvent accessible: ", solvent_accessible,
+          "\nN-term: ", n_term,
+          "\nC-term: ", c_term,
           "\n" )
   
   if len ( list_of_residues ) > 1 and distance > 0.0 :
-    find_structural_motifs ( args.filename, list_of_residues, distance, min_plddt, solvent_accessible )
+    find_structural_motifs ( args.filename, list_of_residues, distance, min_plddt, n_term, c_term )
 
