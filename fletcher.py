@@ -1,8 +1,6 @@
 import gemmi
 import argparse
 import json
-from Bio.PDB import PDBParser
-from Bio.PDB.SASA import ShrakeRupley
 from pathlib import Path
 from coot_scripting import create_script_file
 
@@ -42,21 +40,8 @@ def find_structural_motifs ( filename = "",
             if found_in_contacts :
               break
           if len(residue_lists) == len(partial_result) :
-            # Solvent exposure checks?
-            if solvent_accessible :
-              p = PDBParser ( QUIET=1 )
-              struct = p.get_structure ( "model", filename )
-              sr = ShrakeRupley ( )
-              sr.compute ( struct, level="S" )
-              # struct.sasa gives the total SASA
-              for result in partial_result :
-                # check SASA > 0 for all hits
-                if struct[0]["A"][result.seqid].sasa == 0.0 :
-                  break
-              result_list.append ( partial_result )
-            else :
-              result_list.append ( partial_result )
-  
+            result_list.append ( partial_result )
+            
   if len ( result_list ) > 0 :
     Path ( filename ).touch() # We want results at the top
     result_dict['filename'] = filename
