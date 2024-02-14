@@ -133,7 +133,7 @@ if __name__ == '__main__':
   list_of_residues = [ ]
 
   for slot in input_residues :
-    list_of_residues.append ( gemmi.expand_protein_one_letter_string ( slot ) )
+    list_of_residues.append ( gemmi.gexpand_one_letter_sequence(slot, gemmi.ResidueKind.AA) )
 
   distance = float ( args.distance )
   min_plddt = float ( args.plddt )
