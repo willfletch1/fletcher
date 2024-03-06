@@ -45,7 +45,7 @@ def find_structural_motifs ( filename = "",
             if (n_term or c_term) :
               in_terminus = False
               for residue in partial_result :
-                if n_term and residue.seqid.num == 1 :
+                if n_term and residue == chain[0] :
                   in_terminus = True
                 elif c_term and residue.seqid.num == chain[-1].seqid.num :
                   in_terminus = True
